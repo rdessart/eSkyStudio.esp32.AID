@@ -8,6 +8,8 @@
     "idf.toolsPath": "/Users/rdessart/.espressif",
     "idf.flashType": "UART",
     "files.associations": {
-        "freertos.h": "c"
-    }
+        "freertos.h": "c",
+        "sys.h": "c"
+    },
+    "idf.portWin": "COM4"
 }
