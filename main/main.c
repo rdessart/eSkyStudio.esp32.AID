@@ -22,10 +22,10 @@ int client_sock = -1;
 #define UART_TX_PIN                1
 #define UART_RX_PIN                3
 #define UART_BUFFER_SIZE           1024
-#define WIFI_SSID      "eSky_aircraft"
-#define WIFI_PASS      "eSky1234"
-#define WIFI_CHANNEL   2
-#define MAX_STA_CONN       4
+#define WIFI_SSID                  "eSky_aircraft"
+#define WIFI_PASS                  "eSky1234"
+#define WIFI_CHANNEL               2
+#define MAX_STA_CONN               4
 
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
@@ -49,8 +49,7 @@ void wifi_init_softap(void)
     esp_netif_t *netif = esp_netif_create_default_wifi_ap();
 
     esp_netif_ip_info_t ip_info;
-    IP4_ADDR(&ip_info.ip, 172, 20, 192, 1);      // Set IP address
-    IP4_ADDR(&ip_info.gw, 172, 20, 192, 1);      // Set gateway
+    IP4_ADDR(&ip_info.ip, 192, 168, 4, 254);
     IP4_ADDR(&ip_info.netmask, 255, 255, 255, 0); // Set netmask
     esp_netif_dhcps_stop(netif); // Stop DHCP server
     esp_netif_set_ip_info(netif, &ip_info); // Set static IP
@@ -136,7 +135,8 @@ void tcp_server_task(void *pvParameters)
             if(len <= 0) break;
 
             rx_buffer[len] = '\0';
-            uart_write_bytes(UART_NUM, rx_buffer, len);
+            printf("*%s", rx_buffer);
+            // uart_write_bytes(UART_NUM, rx_buffer, len);
         }
 
         close(client_sock);
@@ -153,7 +153,15 @@ void uart_to_tcp_task(void *pvParameters) {
     while (1) 
     {
         int len = uart_read_bytes(UART_NUM, data, UART_BUFFER_SIZE, 20 / portTICK_PERIOD_MS);
-        if (len > 0 && client_sock >= 0) 
+        if(len <= 0)
+            continue;
+        if(data[0] == '@')
+        {
+            printf("#REBOOT REQUESTED !\n");
+            abort();
+            continue;
+        }
+        if (client_sock >= 0) 
         {
             send(client_sock, data, len, 0);
         }
